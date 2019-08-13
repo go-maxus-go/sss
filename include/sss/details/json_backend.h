@@ -21,6 +21,11 @@ public:
         backend[field_name] = value;
     }
 
+    void add_object(const char * field_name, const json_backend & object)
+    {
+        backend[field_name] = object.backend;
+    }
+
     std::string to_string() const
     {
         return backend.dump(4);

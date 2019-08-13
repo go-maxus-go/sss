@@ -18,16 +18,16 @@ namespace sss {
 #define TO_STRING(str) #str
 #define SSS_FIELD(type, name) \
     static inline const char __##name[] = TO_STRING(name); \
-    sss::SerializableField<type, __##name> name
+    sss::serializable_field<type, __##name> name
 
 template<class T, const char * m_name>
-class SerializableField
+class serializable_field
 {
 public:
     using type = T;
 
-    SerializableField() = default;
-    SerializableField(const T & value) : m_value(value)
+    serializable_field() = default;
+    serializable_field(const T & value) : m_value(value)
     {}
 
     T & value() { return m_value; }
@@ -44,14 +44,18 @@ class serializable
 public:
     std::string to_string() const
     {
-        details::backend_wrapper<backend_t> backend;
+        backend_impl_t backend;
+        serialize(backend);
+        return backend.to_string();
+    }
+
+    void serialize(backend_impl_t & backend) const
+    {
         const auto this_tuple = details::to_tuple(*static_cast<const T*>(this));
 
         std::apply([this, &backend](auto & ...field) {
             (..., serialize_field(backend, field.name(), field.value()));
         }, this_tuple);
-
-        return backend.to_string();
     }
 
 private:
@@ -59,8 +63,11 @@ private:
     void serialize_field(backend_impl_t & backend, const char * name, const value_t & value) const
     {
         constexpr auto is_serializable = std::is_base_of<sss::serializable<value_t, backend_t>, value_t>::value;
-        if constexpr (is_serializable)
-            backend.add(name, value.to_string());
+        if constexpr (is_serializable) {
+            backend_impl_t object;
+            value.serialize(object);
+            backend.add_object(name, std::move(object));
+        }
         else
             backend.add(name, value);
     }
