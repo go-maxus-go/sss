@@ -26,7 +26,7 @@ constexpr std::size_t to_tuple_size_f() {
     if constexpr (M == 0)
         return std::is_empty<T>{} ? 0u : throw "Unable to determine number of elements";
     else if constexpr (L == M)
-        return M - 1;
+        return M;
     else if constexpr (is_braces_constructible_n<T, M>{})
         return to_tuple_size_f<T, M, R>();
     else
@@ -57,7 +57,7 @@ auto to_tuple_impl(T&&, std::integral_constant<std::size_t, N>) noexcept {
 }
 
 template<class T>
-auto to_tuple(T & object) noexcept {
+auto to_tuple(T && object) noexcept {
     return details::to_tuple_impl(std::forward<T>(object), details::to_tuple_size<std::decay_t<T>>{});
 }
 
