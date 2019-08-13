@@ -31,6 +31,17 @@ public:
         return backend.dump(4);
     }
 
+    void parse(const std::string & text)
+    {
+        backend = backend.parse(text);
+    }
+
+    template<class field_t>
+    field_t get(const char * field_name)
+    {
+        return *backend.find<field_t>(field_name);
+    }
+
 private:
     json::json backend;
 };

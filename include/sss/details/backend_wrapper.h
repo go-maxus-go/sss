@@ -23,7 +23,7 @@ public:
 
     void parse(const std::string & text)
     {
-        //backend.parse(text);
+        backend.parse(text);
     }
 
     std::string to_string() const
@@ -34,8 +34,7 @@ public:
     template<class field_t>
     field_t get(const char * field_name)
     {
-        return field_t{};
-        //return backend.get<field_t>(field_name);
+        return backend.get<field_t>(field_name);
     }
 
 private:

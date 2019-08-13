@@ -26,7 +26,7 @@ constexpr std::size_t to_tuple_size_f() {
     if constexpr (M == 0)
         return std::is_empty<T>{} ? 0u : throw "Unable to determine number of elements";
     else if constexpr (L == M)
-        return M;
+        return M - 1;
     else if constexpr (is_braces_constructible_n<T, M>{})
         return to_tuple_size_f<T, M, R>();
     else

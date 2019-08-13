@@ -74,13 +74,14 @@ public:
 
     void deserialize(backend_impl_t & backend)
     {
-        auto this_tuple = details::to_tuple(*static_cast<const T*>(this));
+        auto this_tuple = details::to_tuple(*static_cast<T const *>(this));
 
         std::apply([this, &backend](auto & ...field) {
-            (..., deserialize_field(backend, field));
+            (..., deserialize_field(backend, field.name(), field.value()));
         }, this_tuple);
 
-        *static_cast<T*>(this) = std::make_from_tuple<T>(std::move(this_tuple));
+        auto data = std::tuple_cat(std::make_tuple(serializable<T, backend_t>()), std::move(this_tuple));
+        *static_cast<T*>(this) = std::make_from_tuple<T>(std::move(data));
     }
 
 private:
@@ -97,11 +98,12 @@ private:
             backend.add(name, value);
     }
 
-    template<class field_t>
-    void deserialize_field(backend_impl_t & backend, field_t & field)
+    template<class value_t>
+    void deserialize_field(backend_impl_t & backend, const char * name, value_t & value) const
     {
-        auto value = backend.get<std::remove_reference_t<decltype(field.value())>>(field.name());
-        field.value() = value;// backend.get<std::remove_reference_t<decltype(field.value())>>(field.name());
+        constexpr auto is_serializable = std::is_base_of<sss::serializable<value_t, backend_t>, value_t>::value;
+        if constexpr (!is_serializable)
+            value = backend.get<value_t>(name);
         //constexpr auto is_serializable = std::is_base_of<sss::serializable<value_t, backend_t>, value_t>::value;
         //if constexpr (is_serializable) {
         //    backend_impl_t object;
