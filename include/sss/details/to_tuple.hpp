@@ -36,28 +36,30 @@ template<class T> using to_tuple_size = std::integral_constant<std::size_t, to_t
 
 
 template<class T>
-auto to_tuple_impl(T&&, std::integral_constant<std::size_t, 0>) noexcept {
+auto to_tuple_impl(T &, std::integral_constant<std::size_t, 0>) noexcept {
     return std::make_tuple();
 }
 
 #define TO_TUPLE_P(Z,N,_) , p ## N
+#define TO_TUPLE_P_P(Z,N,_) , &p ## N
 #define TO_TUPLE_SPECIALIZATION(Z,N,_) \
 template<class T> \
-auto to_tuple_impl(T&& object, std::integral_constant<std::size_t, N + 1>) noexcept { \
-        auto&& [p BOOST_PP_REPEAT_ ## Z(N, TO_TUPLE_P, nil)] = object; \
-        return std::make_tuple(p BOOST_PP_REPEAT_ ## Z(N, TO_TUPLE_P, nil)); \
+auto to_tuple_impl(T & object, std::integral_constant<std::size_t, N + 1>) noexcept { \
+        auto& [p BOOST_PP_REPEAT_ ## Z(N, TO_TUPLE_P, nil)] = object; \
+        return std::make_tuple(&p BOOST_PP_REPEAT_ ## Z(N, TO_TUPLE_P_P, nil)); \
     }
 BOOST_PP_REPEAT(TO_TUPLE_MAX, TO_TUPLE_SPECIALIZATION, nil)
 #undef TO_TUPLE_SPECIALIZATION
+#undef TO_TUPLE_P_P
 #undef TO_TUPLE_P
 
 template<class T, class = struct current_value, std::size_t = TO_TUPLE_MAX, class = struct required_value, std::size_t N>
-auto to_tuple_impl(T&&, std::integral_constant<std::size_t, N>) noexcept {
+auto to_tuple_impl(T &, std::integral_constant<std::size_t, N>) noexcept {
     static_assert(N <= TO_TUPLE_MAX, "Please increase TO_TUPLE_MAX");
 }
 
 template<class T>
-auto to_tuple(T && object) noexcept {
+auto to_tuple(T & object) noexcept {
     return details::to_tuple_impl(std::forward<T>(object), details::to_tuple_size<std::decay_t<T>>{});
 }
 

@@ -10,6 +10,11 @@ template<class backend_t>
 class backend_wrapper
 {
 public:
+    backend_wrapper() = default;
+    backend_wrapper(backend_t backend)
+        : backend(std::move(backend))
+    {}
+
     template<class field_t>
     void add(const char * field_name, field_t && value)
     {
@@ -31,10 +36,14 @@ public:
         return backend.to_string();
     }
 
-    template<class field_t>
-    field_t get(const char * field_name)
+    auto get(const char * field_name)
     {
-        return backend.get<field_t>(field_name);
+        return backend.get(field_name);
+    }
+
+    backend_wrapper<backend_t> get_object(const char * field_name)
+    {
+        return backend_wrapper<backend_t>(backend.get(field_name));
     }
 
 private:

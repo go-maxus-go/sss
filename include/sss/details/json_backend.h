@@ -15,6 +15,11 @@ namespace json = nlohmann;
 class json_backend
 {
 public:
+    json_backend() = default;
+    json_backend(json::json backend)
+        : backend(std::move(backend))
+    {}
+
     template<class field_t>
     void add(const char * field_name, const field_t & value)
     {
@@ -36,10 +41,14 @@ public:
         backend = backend.parse(text);
     }
 
-    template<class field_t>
-    field_t get(const char * field_name)
+    auto get(const char * field_name)
     {
-        return *backend.find<field_t>(field_name);
+        return *backend.find(field_name);
+    }
+
+    auto get_object(const char * field_name)
+    {
+        return json_backend(*backend.find(field_name));
     }
 
 private:
