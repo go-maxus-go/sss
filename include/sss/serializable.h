@@ -3,6 +3,11 @@
 #include <string>
 #include <sstream>
 
+#include <type_traits>
+
+#include <functional>
+#include <utility>
+
 #include "details/to_tuple.hpp"
 #include "details/json_backend.h"
 #include "details/backend_wrapper.h"
@@ -50,18 +55,14 @@ public:
     }
 
 private:
-    template<class value_t, class Y,
-    class = typename std::enable_if<std::is_base_of<serializable<Y, backend_t>, value_t>::value>::type>
+    template<class value_t>
     void serialize_field(backend_impl_t & backend, const char * name, const value_t & value) const
     {
-        backend.add(name, value.to_string());
-    }
-
-    template<class value_t, class Y,
-    class = typename std::enable_if<!std::is_base_of<serializable<Y, backend_t>, value_t>::value>::type>
-    void serialize_field(backend_impl_t & backend, const char * name, const value_t & value) const
-    {
-        backend.add(name, value);
+        constexpr auto is_serializable = std::is_base_of<sss::serializable<value_t, backend_t>, value_t>::value;
+        if constexpr (is_serializable)
+            backend.add(name, value.to_string());
+        else
+            backend.add(name, value);
     }
 };
 

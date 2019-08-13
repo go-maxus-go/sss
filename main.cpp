@@ -6,8 +6,8 @@
 
 struct Person : sss::json_serializable<Person>
 {
-//    SSS_FIELD(std::string, name){"John"};
-    SSS_FIELD(std::string, surname){"Smith"};
+    SSS_FIELD(std::string, name){"John"};
+    //SSS_FIELD(std::string, surname){"Smith"};
 //    SSS_FIELD(int, age) = 42;
     //SERIALIZABLE_FIELD(float, height) = 185.5; // Uncomment me later
 };
@@ -15,10 +15,9 @@ struct Person : sss::json_serializable<Person>
 struct Employee : sss::json_serializable<Employee>
 {
     SSS_FIELD(Person, person);
-    SSS_FIELD(int, salary) = 100500;
+    SSS_FIELD(int, salary) {100500};
 //    SSS_FIELD(int, vacationLeft) = 14; // Comment me later
 };
-
 
 int main()
 {
