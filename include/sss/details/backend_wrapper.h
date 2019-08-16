@@ -31,9 +31,9 @@ public:
         backend.parse(text);
     }
 
-    std::string to_string() const
+    std::string to_string(int indent) const
     {
-        return backend.to_string();
+        return backend.to_string(indent);
     }
 
     auto get(const char * field_name)

@@ -16,6 +16,7 @@ struct Person : sss::json_serializable<Person>
     SSS_FIELD(int, age) = 42;
     SSS_FIELD(float, height) = 185.5;
     SSS_FIELD(std::string, residence) {"Bearlin"};
+    //SSS_FIELD(std:vector<std::string>, friends) {"cat", "dog", "mouse"};
 };
 
 int main()

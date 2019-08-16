@@ -9,4 +9,6 @@ include_directories("3rdparty/preprocessor/include")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(test main.cpp)
+file(GLOB_RECURSE SRC_FILES include/*.h include/*.hpp include/*.cpp)
+
+add_executable(test main.cpp ${SRC_FILES})

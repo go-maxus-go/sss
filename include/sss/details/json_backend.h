@@ -2,21 +2,19 @@
 
 #include <string>
 #include <utility>
-#include <sstream>
-#include <iomanip>
 
 #include <nlohmann/json.hpp>
 
 
 namespace sss::details {
 
-namespace json = nlohmann;
+using json = nlohmann::json;
 
 class json_backend
 {
 public:
     json_backend() = default;
-    json_backend(json::json backend)
+    json_backend(json backend)
         : backend(std::move(backend))
     {}
 
@@ -31,9 +29,9 @@ public:
         backend[field_name] = object.backend;
     }
 
-    std::string to_string() const
+    std::string to_string(int indent) const
     {
-        return backend.dump(4);
+        return backend.dump(indent);
     }
 
     void parse(const std::string & text)
@@ -52,7 +50,7 @@ public:
     }
 
 private:
-    json::json backend;
+    json backend;
 };
 
 } //  namespace sss::details
