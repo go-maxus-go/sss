@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.10)
 
-project(test)
+project(tests)
 
 include_directories("include")
 include_directories("3rdparty/json/include")
@@ -11,4 +11,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE SRC_FILES include/*.h include/*.hpp include/*.cpp)
 
-add_executable(test main.cpp ${SRC_FILES})
+add_executable(tests main.cpp ${SRC_FILES})

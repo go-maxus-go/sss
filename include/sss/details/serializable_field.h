@@ -1,5 +1,8 @@
 #pragma once
 
+#include <utility>
+#include <initializer_list>
+
 
 namespace sss::details {
 
@@ -17,10 +20,8 @@ public:
     const T & value() const { return m_value; }
     const char * name() const { return m_name; }
 
-    operator T & ()
-    {
-        return m_value;
-    }
+    operator T & () { return m_value; }
+    T * operator -> () { return &m_value; }
 
 private:
     T m_value;

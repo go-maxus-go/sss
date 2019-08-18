@@ -2,6 +2,8 @@
 
 #include <string>
 #include <utility>
+#include <algorithm>
+#include <initializer_list>
 
 #include <nlohmann/json.hpp>
 
@@ -27,6 +29,12 @@ public:
     void add_object(const char * field_name, const json_backend & object)
     {
         backend[field_name] = object.backend;
+    }
+
+    template<class field_t>
+    void add_container(const char * field_name, const field_t & value)
+    {
+        backend[field_name] = value;
     }
 
     std::string to_string(int indent) const

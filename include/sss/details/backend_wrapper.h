@@ -26,6 +26,12 @@ public:
         backend.add_object(field_name, std::forward<backend_t>(value.backend));
     }
 
+    template<class field_t>
+    void add_container(const char * field_name, field_t && value)
+    {
+        backend.add_container(field_name, std::forward<field_t>(value));
+    }
+
     void parse(const std::string & text)
     {
         backend.parse(text);

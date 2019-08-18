@@ -60,7 +60,7 @@ auto to_tuple_impl(T &, std::integral_constant<std::size_t, N>) noexcept {
 
 template<class T>
 auto to_tuple(T & object) noexcept {
-    return details::to_tuple_impl(std::forward<T>(object), details::to_tuple_size<std::decay_t<T>>{});
+    return details::to_tuple_impl(object, details::to_tuple_size<std::decay_t<T>>{});
 }
 
 } // namespace sss::details
