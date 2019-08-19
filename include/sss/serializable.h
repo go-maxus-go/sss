@@ -23,16 +23,16 @@ class serializable;
 template<class backend_t>
 using backend_impl_t = details::backend_wrapper<backend_t>;
 
-enum class field_type { primitive, serializable, container };
+enum class field_type { primitive, character, serializable, container };
 
 template<typename T, typename _ = void>
-struct is_container : std::false_type {};
+struct is_container_t : std::false_type {};
 
 template<typename... Ts>
 struct is_container_helper {};
 
 template<typename T>
-struct is_container<
+struct is_container_t<
         T,
         std::conditional_t<
             false,
@@ -61,13 +61,16 @@ struct get_field_type
             std::is_same<value_t, std::string>::value ||
             std::is_same<value_t, std::wstring>::value;
         constexpr auto is_serializable = std::is_base_of<serializable<value_t, backend_t>, value_t>::value;
-        constexpr auto container = is_container<value_t>();
+        constexpr auto is_character = std::is_same<char, value_t>::value;
+        constexpr auto is_container = is_container_t<value_t>();
 
         if constexpr (is_string)
             return field_type::primitive;
+        else if (is_character)
+            return field_type::character;
         else if (is_serializable)
             return field_type::serializable;
-        else if (container)
+        else if (is_container)
             return field_type::container;
         else
             return field_type::primitive;
@@ -83,6 +86,15 @@ struct field_serializer<value_t, backend_t, field_type::primitive>
     static void serialize(backend_impl_t<backend_t> & backend, const char * name, const value_t & value)
     {
         backend.add(name, value);
+    }
+};
+
+template<class value_t, class backend_t>
+struct field_serializer<value_t, backend_t, field_type::character>
+{
+    static void serialize(backend_impl_t<backend_t> & backend, const char * name, const value_t & value)
+    {
+        backend.add(name, static_cast<int>(value));
     }
 };
 
@@ -115,6 +127,15 @@ struct field_deserializer<value_t, backend_t, field_type::primitive>
     static void deserialize(backend_impl_t<backend_t> & backend, const char * name, value_t & value)
     {
         value = backend.get(name);
+    }
+};
+
+template<class value_t, class backend_t>
+struct field_deserializer<value_t, backend_t, field_type::character>
+{
+    static void deserialize(backend_impl_t<backend_t> & backend, const char * name, value_t & value)
+    {
+        value = static_cast<int>(backend.get(name));
     }
 };
 
