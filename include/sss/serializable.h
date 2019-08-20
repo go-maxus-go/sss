@@ -59,7 +59,9 @@ struct get_field_type
     {
         constexpr auto is_string =
             std::is_same<value_t, std::string>::value ||
-            std::is_same<value_t, std::wstring>::value;
+            std::is_same<value_t, std::wstring>::value ||
+            std::is_same<value_t, std::u16string>::value ||
+            std::is_same<value_t, std::u32string>::value;
         constexpr auto is_serializable = std::is_base_of<serializable<value_t, backend_t>, value_t>::value;
         constexpr auto is_character = std::is_same<char, value_t>::value;
         constexpr auto is_container = is_container_t<value_t>();
