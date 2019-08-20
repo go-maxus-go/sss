@@ -135,7 +135,7 @@ struct field_deserializer<value_t, backend_t, field_type::character>
 {
     static void deserialize(backend_impl_t<backend_t> & backend, const char * name, value_t & value)
     {
-        value = static_cast<int>(backend.get(name));
+        value = static_cast<char>(static_cast<int>(backend.get(name)));
     }
 };
 

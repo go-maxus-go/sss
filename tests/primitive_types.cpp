@@ -65,7 +65,7 @@ TEST_CASE("Negative values to json", "[json_primitive_types]")
     init_data.long_value          = -2;
     init_data.bool_value          = false;
     init_data.char_value          = -3;
-    init_data.wchar_value         = -33;
+    init_data.wchar_value         = static_cast<wchar_t>(-33);
     init_data.short_value         = -4;
     init_data.long_long_value     = -5;
     init_data.float_value         = -6.1f;
