@@ -2,7 +2,13 @@
 
 #include <sss/serializable.h>
 
+#include "serialize_deserialize_check.h"
+
+
 namespace {
+
+struct empty_struct : sss::json_serializable<empty_struct>
+{};
 
 struct integral_data : sss::json_serializable<integral_data>
 {
@@ -27,6 +33,12 @@ struct integral_data : sss::json_serializable<integral_data>
 
 } // anonymous namespace
 
+TEST_CASE("Empty serializable struct is not an error", "[json_primitive_types]")
+{
+    const auto empty = empty_struct();
+    serialize_deserialize_check(empty);
+}
+
 TEST_CASE("Primitive types to json", "[json_primitive_types]")
 {
     auto init_data = integral_data();
@@ -49,12 +61,7 @@ TEST_CASE("Primitive types to json", "[json_primitive_types]")
     init_data.unsigned_long_long_value     = 12;
     init_data.unsigned_long_long_int_value = 122;
 
-    const auto init_data_text = init_data.to_string();
-
-    auto restored_data = integral_data();
-    restored_data.from_string(init_data_text);
-
-    REQUIRE(init_data_text == restored_data.to_string());
+    serialize_deserialize_check(init_data);
 }
 
 TEST_CASE("Negative values to json", "[json_primitive_types]")
@@ -79,10 +86,5 @@ TEST_CASE("Negative values to json", "[json_primitive_types]")
     init_data.unsigned_long_long_value     = 12;
     init_data.unsigned_long_long_int_value = 122;
 
-    const auto init_data_text = init_data.to_string();
-
-    auto restored_data = integral_data();
-    restored_data.from_string(init_data_text);
-
-    REQUIRE(init_data_text == restored_data.to_string());
+    serialize_deserialize_check(init_data);
 }
