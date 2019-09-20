@@ -114,48 +114,34 @@ void serialize_impl(backend_impl_t<backend_t> & backend, const field_t & field, 
     backend.add_container(field->name(), field->value());
 }
 
-template<class value_t, class backend_t, field_type>
-struct field_deserializer;
-
-template<class value_t, class backend_t>
-struct field_deserializer<value_t, backend_t, field_type::primitive>
+template<class backend_t, class field_t>
+void deserialize_impl(backend_impl_t<backend_t> & backend, field_t & field, primitive_t)
 {
-    static void deserialize(backend_impl_t<backend_t> & backend, const char * name, value_t & value)
-    {
-        value = backend.get(name);
-    }
-};
+    field->value() = backend.get(field->name());
+}
 
-template<class value_t, class backend_t>
-struct field_deserializer<value_t, backend_t, field_type::character>
+template<class backend_t, class field_t>
+void deserialize_impl(backend_impl_t<backend_t> & backend, field_t & field, character_t)
 {
-    static void deserialize(backend_impl_t<backend_t> & backend, const char * name, value_t & value)
-    {
-        value = static_cast<char>(static_cast<int>(backend.get(name)));
-    }
-};
+    field->value() = static_cast<char>(static_cast<int>(backend.get(field->name())));
+}
 
-template<class value_t, class backend_t>
-struct field_deserializer<value_t, backend_t, field_type::serializable>
+template<class backend_t, class field_t>
+void deserialize_impl(backend_impl_t<backend_t> & backend, field_t & field, serializable_t)
 {
-    static void deserialize(backend_impl_t<backend_t> & backend, const char * name, value_t & value)
-    {
-        auto object = backend.get_object(name);
-        value.deserialize(object);
-    }
-};
+    auto object = backend.get_object(field->name());
+    field->value().deserialize(object);
+}
 
-template<class value_t, class backend_t>
-struct field_deserializer<value_t, backend_t, field_type::container>
+template<class backend_t, class field_t>
+void deserialize_impl(backend_impl_t<backend_t> & backend, field_t & field, container_t)
 {
-    static void deserialize(backend_impl_t<backend_t> & backend, const char * name, value_t & value)
-    {
-        auto container = backend.get(name);
-        value.clear();
-        for (auto v : container)
-            value.emplace(value.end(), v);
-    }
-};
+    auto container = backend.get(field->name());
+    auto & value = field->value();
+    value.clear();
+    for (auto v : container)
+        value.emplace(value.end(), v);
+}
 
 template<class T, class backend_t>
 class serializable
@@ -189,7 +175,7 @@ public:
     {
         const auto this_tuple = details::to_tuple(*reinterpret_cast<T * const>(this));
         std::apply([this, &backend](auto & ...field) {
-            (..., deserialize_field(backend, field->name(), field->value()));
+            (..., deserialize_field(backend, field));
         }, this_tuple);
     }
 
@@ -201,11 +187,11 @@ private:
         serialize_impl(backend, field, field_type_t<type>());
     }
 
-    template<class value_t>
-    void deserialize_field(backend_impl_t & backend, const char * name, value_t & value) const
+    template<class field_t>
+    void deserialize_field(backend_impl_t & backend, field_t & field) const
     {
-        constexpr auto type = get_field_type<value_t, backend_t>::value();
-        field_deserializer<value_t, backend_t, type>::deserialize(backend, name, value);
+        constexpr auto type = get_field_type<decltype(field->value()), backend_t>::value();
+        deserialize_impl(backend, field, field_type_t<type>());
     }
 };
 
