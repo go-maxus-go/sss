@@ -55,11 +55,12 @@ struct is_container_t<
             >
         > : public std::true_type {};
 
-template<class value_t, class backend_t>
+template<class init_value_t, class backend_t>
 struct get_field_type
 {
     static constexpr field_type value()
     {
+        using value_t = std::remove_cv_t<std::remove_reference_t<init_value_t>>;
         constexpr auto is_string =
             std::is_same<value_t, std::string>::value ||
             std::is_same<value_t, std::wstring>::value ||
@@ -82,30 +83,30 @@ struct get_field_type
     }
 };
 
-template<class value_t, class backend_t>
-void serialize_impl(backend_impl_t<backend_t> & backend, const char * name, const value_t & value, field_type_t<field_type::primitive>)
+template<class backend_t, class field_t>
+void serialize_impl(backend_impl_t<backend_t> & backend, const field_t & field, field_type_t<field_type::primitive>)
 {
-    backend.add(name, value);
+    backend.add(field->name(), field->value());
 }
 
-template<class value_t, class backend_t>
-void serialize_impl(backend_impl_t<backend_t> & backend, const char * name, const value_t & value, field_type_t<field_type::character>)
+template<class backend_t, class field_t>
+void serialize_impl(backend_impl_t<backend_t> & backend, const field_t & field, field_type_t<field_type::character>)
 {
-    backend.add(name, static_cast<int>(value));
+    backend.add(field->name(), static_cast<int>(field->value()));
 }
 
-template<class value_t, class backend_t>
-void serialize_impl(backend_impl_t<backend_t> & backend, const char * name, const value_t & value, field_type_t<field_type::serializable>)
+template<class backend_t, class field_t>
+void serialize_impl(backend_impl_t<backend_t> & backend, const field_t & field, field_type_t<field_type::serializable>)
 {
     backend_impl_t<backend_t> object;
-    value.serialize(object);
-    backend.add_object(name, std::move(object));
+    field->value().serialize(object);
+    backend.add_object(field->name(), std::move(object));
 }
 
-template<class value_t, class backend_t>
-void serialize_impl(backend_impl_t<backend_t> & backend, const char * name, const value_t & value, field_type_t<field_type::container>)
+template<class backend_t, class field_t>
+void serialize_impl(backend_impl_t<backend_t> & backend, const field_t & field, field_type_t<field_type::container>)
 {
-    backend.add_container(name, value);
+    backend.add_container(field->name(), field->value());
 }
 
 template<class value_t, class backend_t, field_type>
@@ -168,7 +169,7 @@ public:
         auto this_tuple = details::to_tuple(*static_cast<const T*>(this));
 
         std::apply([this, &backend](auto & ...field) {
-            (..., serialize_field(backend, field->name(), field->value()));
+            (..., serialize_field(backend, field));
         }, this_tuple);
     }
 
@@ -188,11 +189,11 @@ public:
     }
 
 private:
-    template<class value_t>
-    void serialize_field(backend_impl_t & backend, const char * name, const value_t & value) const
+    template<class field_t>
+    void serialize_field(backend_impl_t & backend, const field_t & field) const
     {
-        constexpr auto type = get_field_type<value_t, backend_t>::value();
-        serialize_impl(backend, name, value, field_type_t<type>());
+        constexpr auto type = get_field_type<decltype(field->value()), backend_t>::value();
+        serialize_impl(backend, field, field_type_t<type>());
     }
 
     template<class value_t>
